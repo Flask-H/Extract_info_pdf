@@ -1,0 +1,13 @@
+### FILE: requirements.txt
+pdfplumber
+pytesseract
+pdf2image
+pillow
+regex
+pandas
+python-magic
+PyPDF2
+
+# Optional (better OCR/AI services):
+# google-cloud-vision
+# azure-ai-formrecognizer

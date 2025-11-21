@@ -1,0 +1,28 @@
+# Entornos virtuales
+venv/
+.env/
+.venv/
+
+# Archivos temporales
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Configuración local
+*.env
+
+# VSCode
+.vscode/
+
+# Archivos de sistema
+.DS_Store
+
+# Carpetas generadas por tu pipeline
+media/
+output/
+*.csv
+*.pdf
+
+# Logs
+*.log
