@@ -1,6 +1,7 @@
 ### FILE: utils/__init__.py
 # módulo util vacío, reservado
 
+
 """ Para imprimir datos escaneados
     # Carpeta de salida
     out_dir = Path("output")
