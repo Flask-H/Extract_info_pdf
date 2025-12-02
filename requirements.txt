@@ -1,13 +1,20 @@
 ### FILE: requirements.txt
+#PDF
 pdfplumber
-pytesseract
 pdf2image
+PyPDF2
+#OCR
+pytesseract
 pillow
+#Utils
 regex
 pandas
 python-magic
-PyPDF2
+#Docs
 docx
+# GUI
+PySide6
+qdarktheme
 
 # Optional (better OCR/AI services):
 # google-cloud-vision

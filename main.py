@@ -35,11 +35,21 @@ def import_parser(module_path):
     return module
 
 
-#PROCESAR CARPETA COMPLETA
-def procesar_carpeta(path_folder):
+def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=None):
     path_folder = Path(path_folder)
 
-    print(f" Procesando carpeta: {path_folder}")
+    # Helper interno para logs
+    def log(msg):
+        print(msg)
+        if gui_log_callback:
+            gui_log_callback(msg)
+
+    # Helper interno para progreso
+    def progress(value):
+        if gui_progress_callback:
+            gui_progress_callback(value)
+
+    log(f" Procesando carpeta: {path_folder}")
 
     pdf_file = None
     docx_file = None
@@ -47,7 +57,14 @@ def procesar_carpeta(path_folder):
     # -------------------------
     # Identificar archivos
     # -------------------------
-    for archivo in path_folder.iterdir():
+    files = list(path_folder.iterdir())
+    total = len(files)
+    current = 0
+
+    for archivo in files:
+        current += 1
+        progress(int((current / total) * 30))  # primero 30% del progreso
+
         ext = archivo.suffix.lower()
 
         if ext == ".pdf":
@@ -57,13 +74,13 @@ def procesar_carpeta(path_folder):
             docx_file = archivo
 
     if not pdf_file:
-        print(" No hay PDF principal en la carpeta.")
+        log(" ❌ No hay PDF principal en la carpeta.")
         return
 
     # -------------------------
     # Procesar PDF (contrato)
     # -------------------------
-    print(f"\n=== Procesando contrato PDF: {pdf_file.name} ===")
+    log(f"\n=== Procesando contrato PDF: {pdf_file.name} ===")
     from common.ocr import load_text_from_pdf
     text_pdf = load_text_from_pdf(str(pdf_file))
 
@@ -74,11 +91,13 @@ def procesar_carpeta(path_folder):
     parser = import_parser(parser_module)
     data = parser.parse(text_pdf)
 
+    progress(60)
+
     # -------------------------
     # Procesar DOCX (certificado deuda)
     # -------------------------
     if docx_file:
-        print(f"\n=== Procesando certificado deuda DOCX: {docx_file.name} ===")
+        log(f"\n=== Procesando certificado deuda DOCX: {docx_file.name} ===")
         from common.docx_reader import extract_text_from_docx
         from parsers.parse_cert_deuda import parse as parse_cert
 
@@ -87,16 +106,20 @@ def procesar_carpeta(path_folder):
 
         if deuda_data.get("cuantia"):
             data["cuantia"] = deuda_data["cuantia"]
+            log(f" → Cuantía detectada: {data['cuantia']}")
         else:
             data["cuantia"] = None
+            log(" → No se pudo extraer cuantía del DOCX")
     else:
-        print("\n No se encontró archivo DOCX de certificado.")
+        log("\n No se encontró archivo DOCX de certificado.")
         data["cuantia"] = None
+
+    progress(85)
 
     # -------------------------
     # Exportar único archivo final
     # -------------------------
-    out_dir = Path("output")
+    out_dir = Path("C:/Users/Usuario/Documents/Proyecto_Output/")
     out_dir.mkdir(exist_ok=True)
 
     out_name = pdf_file.stem  # nombre del contrato
@@ -106,10 +129,11 @@ def procesar_carpeta(path_folder):
     write_csv([data], csv_path)
     write_json(data, json_path)
 
-    print(f"\n Archivo combinado generado:")
-    print(f"   CSV → {csv_path}")
-    print(f"   JSON → {json_path}")
+    log(f"\n Archivo combinado generado:")
+    log(f"   CSV → {csv_path}")
+    log(f"   JSON → {json_path}")
 
+    progress(100)
     
 def main(ruta):
     ruta = Path(ruta)
@@ -129,7 +153,7 @@ def main(ruta):
 
 
 # ==================================================
-# EJECUCIÓN DIRECTA
+# EJECUCIÓN POR TERMINAL
 # ==================================================
 if __name__ == "__main__":
     if len(sys.argv) < 2:
