@@ -1,6 +1,6 @@
 #worker.py
 from PySide6.QtCore import QObject, Signal
-from main import procesar_carpeta
+from processing import procesar_carpeta
 from batch_processor import procesar_lote
 from logger_config import get_logger
 
