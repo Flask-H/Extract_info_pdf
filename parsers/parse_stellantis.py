@@ -1,30 +1,5 @@
 import re
 from collections import Counter
-
-def extract_cuantia(text):
-    """
-    En Stellantis, la cuantía total adeudada es siempre
-    el MAYOR número en formato XX.XXX,XX del contrato.
-    """
-    pattern = r"\b\d{1,3}(?:\.\d{3})*,\d{2}\b"
-    encontrados = re.findall(pattern, text)
-
-    if not encontrados:
-        return ""
-
-    valores = []
-    for numero in encontrados:
-        # convertir "15.850,97" a float 15850.97
-        try:
-            valor = float(numero.replace(".", "").replace(",", "."))
-            valores.append((valor, numero))
-        except:
-            pass
-
-    if not valores:
-        return ""
-    
-    return max(valores, key=lambda x: x[0])[1]
     
 def parse(text):
     lines = [l.strip() for l in text.split("\n") if l.strip()]

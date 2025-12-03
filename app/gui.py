@@ -1,12 +1,13 @@
 import os
-from PySide6.QtWidgets import (
-    QWidget, QPushButton, QLabel, QVBoxLayout,
-    QFileDialog, QProgressBar, QTextEdit, QMessageBox
-)
-from PySide6.QtCore import Qt, QThread
 from pathlib import Path
 
-from app.worker import Worker  # Nuestro worker que procesa carpetas
+from PySide6.QtWidgets import (
+    QWidget, QPushButton, QLabel, QVBoxLayout, QFileDialog,
+    QProgressBar, QTextEdit, QMessageBox, QCheckBox, QLineEdit
+)
+from PySide6.QtCore import Qt, QThread
+
+from app.worker import Worker
 
 
 class MainWindow(QWidget):
@@ -26,8 +27,7 @@ class MainWindow(QWidget):
 
         if qss_file.exists():
             with open(qss_file, "r", encoding="utf-8") as f:
-                style = f.read()
-                self.setStyleSheet(style)
+                self.setStyleSheet(f.read())
         else:
             print(" No se encontró el archivo QSS, usando estilo por defecto.")
 
@@ -37,11 +37,22 @@ class MainWindow(QWidget):
     def setup_ui(self):
         layout = QVBoxLayout()
 
-        self.label = QLabel("Selecciona una carpeta con documentos PDF/DOCX")
+        self.label = QLabel("Selecciona una carpeta...")
         self.label.setAlignment(Qt.AlignCenter)
 
         self.btn_select = QPushButton("Seleccionar carpeta")
         self.btn_select.clicked.connect(self.select_folder)
+
+        # Modo lote
+        self.chk_lote = QCheckBox("Modo lote (procesar subcarpetas)")
+
+        self.input_exp = QLineEdit()
+        self.input_exp.setPlaceholderText("Expediente inicial (solo lote)")
+        self.input_exp.setEnabled(False)
+
+        self.chk_lote.stateChanged.connect(
+            lambda: self.input_exp.setEnabled(self.chk_lote.isChecked())
+        )
 
         self.btn_process = QPushButton("Procesar")
         self.btn_process.clicked.connect(self.process_folder)
@@ -52,13 +63,15 @@ class MainWindow(QWidget):
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
-        self.log.setPlaceholderText("Log del sistema...")
 
         self.btn_open_output = QPushButton("Abrir carpeta output")
         self.btn_open_output.clicked.connect(self.open_output)
 
+        # Añadir widgets al layout
         layout.addWidget(self.label)
         layout.addWidget(self.btn_select)
+        layout.addWidget(self.chk_lote)
+        layout.addWidget(self.input_exp)
         layout.addWidget(self.btn_process)
         layout.addWidget(self.progress)
         layout.addWidget(self.log)
@@ -77,19 +90,28 @@ class MainWindow(QWidget):
             self.btn_process.setEnabled(True)
 
     # -------------------------------------------
-    # Procesar carpeta con Worker
+    # Procesar carpeta usando Worker
     # -------------------------------------------
     def process_folder(self):
         if not hasattr(self, "folder"):
             QMessageBox.warning(self, "Error", "No se ha seleccionado ninguna carpeta.")
             return
 
+        modo_lote = self.chk_lote.isChecked()
+        expediente = None
+
+        if modo_lote:
+            if not self.input_exp.text().isdigit():
+                QMessageBox.warning(self, "Error", "Debes ingresar un número de expediente inicial.")
+                return
+            expediente = int(self.input_exp.text())
+
+        # Thread
         self.thread = QThread()
-        self.worker = Worker(self.folder)
+        self.worker = Worker(self.folder, modo_lote=modo_lote, expediente_inicial=expediente)
 
         self.worker.moveToThread(self.thread)
 
-        # Eventos del worker
         self.thread.started.connect(self.worker.run)
         self.worker.progress.connect(self.progress.setValue)
         self.worker.log.connect(self.append_log)
@@ -100,7 +122,7 @@ class MainWindow(QWidget):
         self.thread.start()
 
     # -------------------------------------------
-    # Mostrar logs en pantalla
+    # Mostrar logs
     # -------------------------------------------
     def append_log(self, msg):
         self.log.append(msg)
@@ -113,13 +135,13 @@ class MainWindow(QWidget):
         output.mkdir(exist_ok=True)
         os.startfile(output)
 
+
+# Para ejecución directa
 if __name__ == "__main__":
     from PySide6.QtWidgets import QApplication
     import sys
 
     app = QApplication(sys.argv)
-
     window = MainWindow()
     window.show()
-
     sys.exit(app.exec())

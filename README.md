@@ -7,7 +7,7 @@ Estructura propuesta (cada archivo incluido en este textdoc):
  - common/ocr.py
  - common/cleaner.py
  - classifier/contract_classifier.py
- - parsers/parse_peugeot.py   (usa como base extractor_manteniment.py que subiste)
+ - parsers/parse_peugeot.py
  - parsers/parse_santander.py
  - parsers/parse_stellantis.py
  - parsers/parse_generic.py

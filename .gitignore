@@ -26,3 +26,4 @@ output/
 
 # Logs
 *.log
+logs/

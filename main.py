@@ -18,7 +18,10 @@ from common.ocr import load_text_from_pdf
 from classifier.contract_classifier import classify_contract
 from export.csv_exporter import write_csv
 from export.json_exporter import write_json
+from batch_processor import procesar_lote
 
+from logger_config import get_logger
+logger = get_logger("MAIN")
 
 # Parsers registry
 PARSERS = {
@@ -40,7 +43,7 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
 
     # Helper interno para logs
     def log(msg):
-        print(msg)
+        logger.info(msg)
         if gui_log_callback:
             gui_log_callback(msg)
 
@@ -74,7 +77,7 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
             docx_file = archivo
 
     if not pdf_file:
-        log(" ❌ No hay PDF principal en la carpeta.")
+        log("  No hay PDF principal en la carpeta.")
         return
 
     # -------------------------
@@ -135,21 +138,34 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
 
     progress(100)
     
-def main(ruta):
+def main(ruta, modo_lote=False, expediente_inicial=None):
     ruta = Path(ruta)
 
     if not ruta.exists():
-        print(f" La ruta no existe: {ruta}")
+        logger.info(f" La ruta no existe: {ruta}")
         return
 
-    if ruta.is_file():
-        print(f" No está permitido procesar archivos unicos")
-        return
-    elif ruta.is_dir():
-        procesar_carpeta(ruta)
+    # ---------------------------
+    # MODO LOTE
+    # ---------------------------
+    if modo_lote:
+        if expediente_inicial is None:
+            logger.info("Error: Se requiere expediente inicial para modo lote.")
+            return
 
-    else:
-        print(" La ruta no es ni archivo ni carpeta válida.")
+        return procesar_lote(
+            ruta,
+            expediente_inicial=expediente_inicial,
+        )
+
+    # ---------------------------
+    # MODO NORMAL (1 persona)
+    # ---------------------------
+    if ruta.is_dir():
+        return procesar_carpeta(ruta)
+
+    logger.info(" No está permitido procesar archivos individuales.")
+
 
 
 # ==================================================
@@ -157,7 +173,7 @@ def main(ruta):
 # ==================================================
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Uso: python main.py <ruta_archivo_o_carpeta>")
+        logger.info("Uso: python main.py <ruta_archivo_o_carpeta>")
         sys.exit(1)
 
     main(sys.argv[1])

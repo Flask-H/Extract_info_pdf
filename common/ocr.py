@@ -10,7 +10,8 @@ import pdfplumber
 import pytesseract
 from PIL import Image
 
-
+#Para PDF escaneados(imagenes)--------------------------------
+#Detectar si es escaneado
 def is_scanned_pdf(path_pdf):
     """Detecta si el PDF contiene texto seleccionable o no."""
     try:
@@ -23,7 +24,7 @@ def is_scanned_pdf(path_pdf):
         pass
     return True
 
-
+#Aplicar OCR al escaneado
 def ocr_pdf(path_pdf, dpi=300):
     """Convierte cada página a imagen y aplica OCR."""
     pages = convert_from_path(path_pdf, dpi=dpi)
@@ -33,7 +34,7 @@ def ocr_pdf(path_pdf, dpi=300):
         texts.append(text)
     return '\n'.join(texts)
 
-
+#Para PDF nativo---------------------------------------------
 def extract_text_with_pdfplumber(path_pdf):
     lines = []
     with pdfplumber.open(path_pdf) as pdf:
@@ -44,6 +45,7 @@ def extract_text_with_pdfplumber(path_pdf):
     return '\n'.join(lines)
 
 
+#Condicional-------------------------------------------------
 def load_text_from_pdf(path_pdf):
     if is_scanned_pdf(path_pdf):
         print('Documento escaneado detectado — aplicando OCR (pytesseract)')
