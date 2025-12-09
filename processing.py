@@ -45,6 +45,8 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
 
     log(f"Procesando carpeta: {path_folder}")
 
+    pdf_file = None
+    docx = None
     # ----------------------------
     # Detectar PDF y DOCX
     # ----------------------------
@@ -93,14 +95,17 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
     out_dir = Path("C:/Users/Usuario/Documents/Proyecto_Output/")
     out_dir.mkdir(exist_ok=True)
 
-    csv_path = out_dir / f"{pdf.stem}.csv"
-    json_path = out_dir / f"{pdf.stem}.json"
+    out_name = pdf.stem  # nombre del contrato
+    csv_path = out_dir / (out_name + ".csv")
+    json_path = out_dir / (out_name + ".json")
 
     write_csv([data], csv_path)
     write_json(data, json_path)
 
-    log(f"CSV → {csv_path}")
-    log(f"JSON → {json_path}")
+    log(f"\n Archivo combinado generado:")
+    log(f"   CSV → {csv_path}")
+    log(f"   JSON → {json_path}")
+
 
     progress(100)
 
