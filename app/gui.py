@@ -1,3 +1,4 @@
+#gui.py
 import os
 from pathlib import Path
 
@@ -45,6 +46,8 @@ class MainWindow(QWidget):
 
         # Modo lote
         self.chk_lote = QCheckBox("Modo lote (procesar subcarpetas)")
+        self.chk_force_ocr = QCheckBox("Forzar OCR (PDF escaneado)")
+
 
         self.input_exp = QLineEdit()
         self.input_exp.setPlaceholderText("Expediente inicial (solo lote)")
@@ -71,6 +74,7 @@ class MainWindow(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.btn_select)
         layout.addWidget(self.chk_lote)
+        layout.addWidget(self.chk_force_ocr)
         layout.addWidget(self.input_exp)
         layout.addWidget(self.btn_process)
         layout.addWidget(self.progress)
@@ -108,7 +112,12 @@ class MainWindow(QWidget):
 
         # Thread
         self.thread = QThread()
-        self.worker = Worker(self.folder, modo_lote=modo_lote, expediente_inicial=expediente)
+        self.worker = Worker(
+            self.folder,
+            modo_lote=modo_lote,
+            expediente_inicial=expediente,
+            force_ocr=self.chk_force_ocr.isChecked()
+        )
 
         self.worker.moveToThread(self.thread)
 
@@ -131,7 +140,7 @@ class MainWindow(QWidget):
     # Abrir carpeta output
     # -------------------------------------------
     def open_output(self):
-        output = Path("C:/Users/Usuario/Documents/Proyecto_Output/")
+        output = Path("C:/Users/Usuario/Documents/Automatizaciones/Output/")
         output.mkdir(exist_ok=True)
         os.startfile(output)
 

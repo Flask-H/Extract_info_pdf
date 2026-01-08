@@ -3,9 +3,10 @@
 Parser para contratos Santander basados en palabras clave y bloques.
 """
 import re
-
+from common.cleaner import simple_cleanup
 
 def parse(text):
+    text = simple_cleanup(text)
     t = text
     # Buscar bloque PRESTATARIO
     m = re.search(r'PRESTATARIO(.*?)(?:FIADOR|FINANCIADOR|$)', t, flags=re.DOTALL | re.IGNORECASE)

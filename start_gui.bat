@@ -2,7 +2,7 @@
 setlocal
 
 REM --- Ruta correcta a pythonw.exe ---
-set PYW="C:\Users\Usuario\AppData\Local\Python\pythoncore-3.14-64\pythonw.exe"
+set PYW="C:\Users\Usuario\AppData\Local\Programs\Python\Python310\pythonw.exe"
 
 REM --- Directorio raíz del proyecto (carpeta donde está este .bat) ---
 set ROOT=%~dp0

@@ -1,5 +1,6 @@
-# processing.py
+### FILE: processing.py
 
+from logging import log
 from pathlib import Path
 from logger_config import get_logger
 
@@ -27,7 +28,12 @@ PARSERS = {
 }
 
 
-def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=None):
+def procesar_carpeta(
+    path_folder,
+    gui_log_callback=None,
+    gui_progress_callback=None,
+    force_ocr=False
+):
 
     path_folder = Path(path_folder)
 
@@ -62,8 +68,19 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
     # ----------------------------
     # Proceso del contrato PDF
     # ----------------------------
-    log(f"=== Leyendo PDF {pdf.name} ===")
-    text_pdf = load_text_from_pdf(str(pdf))
+    log(f"=== Analizando PDF {pdf.name} ===")
+
+    if force_ocr:
+        log("Forzar OCR activado → PaddleOCR")
+        from common.ocr import ocr_pdf_paddle
+        text_pdf = ocr_pdf_paddle(str(pdf))
+        print("DEBUG TEXTO OCR")  # DEBUG
+        print(text_pdf)  # DEBUG
+    else:
+        log("OCR desactivado → pdfplumber")
+        text_pdf = load_text_from_pdf(str(pdf))
+    #print("DEBUG TEXTO EXTRAIDO")  # DEBUG
+    #print(text_pdf)  # DEBUG
 
     tipo = classify_contract(text_pdf)
     parser = PARSERS.get(tipo, parse_generic)
@@ -92,7 +109,7 @@ def procesar_carpeta(path_folder, gui_log_callback=None, gui_progress_callback=N
     # ----------------------------
     # Exportar salida
     # ----------------------------
-    out_dir = Path("C:/Users/Usuario/Documents/Proyecto_Output/")
+    out_dir = Path("C:/Users/Usuario/Documents/Automatizaciones/Output/")
     out_dir.mkdir(exist_ok=True)
 
     out_name = pdf.stem  # nombre del contrato
